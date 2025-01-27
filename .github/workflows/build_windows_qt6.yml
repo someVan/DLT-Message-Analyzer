@@ -11,8 +11,8 @@ on:
         description: 'Target branch'
         required: true
         default: 'master'
-      collect_artifacts:
-        description: 'Collect build artifacts'
+      upload_artifacts:
+        description: 'Upload build artifacts'
         required: false
         default: 'false'
         type: boolean
@@ -65,8 +65,8 @@ jobs:
     - name: Checkout of the dlt-viewer
       uses: actions/checkout@v3
       with:
-        repository: GENIVI/dlt-viewer
-        ref: 2.27.0
+        repository: someVan/dlt-viewer
+        ref: 2_27_0
 
     # Checkout project's revision, which is pushed
     - name: Checkout of the project
@@ -115,9 +115,9 @@ jobs:
       shell: cmd
       working-directory: ..\build
 
-    # Collect required artifacts
-    - name: Collect required artifacts
-      if: ${{ github.event.inputs.collect_artifacts == 'true' }}
+    # Collect required files
+    - name: Collect required files
+      if: ${{ github.event.inputs.upload_artifacts == 'true' }}
       run: |
         mkdir .\release_win_qt6_X86_64
         mkdir .\release_win_qt6_X86_64\plugins
@@ -156,7 +156,7 @@ jobs:
       working-directory: .\
 
     - name: Upload artifacts
-      if: ${{ success() && github.event.inputs.collect_artifacts == 'true' }}
+      if: ${{ success() && github.event.inputs.upload_artifacts == 'true' }}
       uses: actions/upload-artifact@v4
       with:
         name: release_win_qt6_X86_64

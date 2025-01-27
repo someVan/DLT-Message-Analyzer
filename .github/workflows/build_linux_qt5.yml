@@ -11,6 +11,11 @@ on:
         description: 'Target branch'
         required: true
         default: 'master'
+      upload_artifacts:
+        description: 'Upload build artifacts'
+        required: false
+        default: 'false'
+        type: boolean
 
 jobs:
   build_linux:
@@ -43,14 +48,14 @@ jobs:
     - name: Checkout of the dlt-viewer
       uses: actions/checkout@v3
       with:
-        repository: GENIVI/dlt-viewer
-        ref: 2.27.0
+        repository: someVan/dlt-viewer
+        ref: 2_27_0
 
     # Checkout project's revision, which is pushed
     - name: Checkout of the ${{ github.event.repository.name }}
       uses: actions/checkout@v3
       with:
-        repository: svlad-90/${{ github.event.repository.name }}
+        repository: someVan/${{ github.event.repository.name }}
         path: ./plugin/${{ github.event.repository.name }}
         ref: ${{ github.ref }}
 
@@ -87,3 +92,23 @@ jobs:
       run: make -j8
       shell: bash
       working-directory: ../build
+
+    # Collect required files after build is finished
+    - name: Collect required files
+      if: ${{ github.event.inputs.upload_artifacts == 'true' }}
+      run: |
+        mkdir ./release_linux_qt5
+        sudo apt update
+        sudo apt install tree
+        tree -f -a ../build > ./release_linux_qt5/outputBuild_qt5.txt
+        tree -f -a ./ > ./release_linux_qt5/outputInside_qt5.txt
+      shell: bash
+      working-directory: ./
+
+    - name: Archive artifact
+      uses: actions/upload-artifact@v4
+      if: ${{ success() && github.event.inputs.upload_artifacts == 'true'}}
+      with:
+        name: release_linux_qt5
+        path: |
+          release_linux_qt5
